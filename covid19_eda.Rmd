@@ -13,10 +13,47 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Background and Data
+
+## Dataset and Source
 The dataset we are using is the `Covid 19 data portal` dataset developed and maintained by Stats NZ. The source of the data is from numerous sources including New Zealand government agencies such as the Reserve Bank of New Zealand, The Treasury and the Ministry of Social Development, banks and other international sources.
+
+## Why is the dataset of interest?
+
+## Data types and structure
+
+## Completeness
+
+## Integration steps
+
+---
 
 # Ethics, Privacy and Security
 
+## Ethical Considerations
+
+## Privacy Concerns
+
+## Security of data
+
+---
+
 # Exploratory Data Analysis
 
+## EDA 1
+
+## EDA 2
+
+## EDA 3
+
+---
+
 # Individual Contributions
+
+
+
+
+
+
+
+
+
