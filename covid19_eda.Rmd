@@ -18,8 +18,11 @@ knitr::opts_chunk$set(echo = TRUE)
 The dataset we are using is the `Covid 19 data portal` dataset developed and maintained by Stats NZ. The source of the data is from numerous sources including New Zealand government agencies such as the Reserve Bank of New Zealand, The Treasury and the Ministry of Social Development, banks and other international sources.
 
 ### Why is the dataset of interest?
+The data set includes data on three main categories; Economic, Health and Social. Each of these categories has a number of sub categories which have different indicators such as, Boradband Usage and Border Crossings. The majority of the indicators are New Zealand based but there are also a few indicators to do with other countries eg. US Economic Index.
+As most of the data is New Zealand based, it will be useful for answering a number of questions about the impact of COVID-19 and the Alert Level restrictions. An example of a question we may want to answer is: What is the effect of an Alert Level increase/ decrease on the NZD foreign exchange rate with USD? To answer this we would look at the timeseries data on NZD/USD exchange and find the Alert Level announcement and commencement dates. Another question we could look at is: How many people have not left New Zealand due to COVID-19? This would be answered by looking at daily border crossings (departures), where we would model a prediction, had COVID-19 not had any effect, versus what we actually saw.
 
 ### Data types and structure
+The dataset is structured in a tree like pattern, where there are four main classes, which each have a number of categories with a number of indicators. 
 
 ### Completeness
 
