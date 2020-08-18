@@ -82,10 +82,10 @@ get.subset <- function(cl, cat, ind) {
 - Weekly economic sentiment
 - New Zealand Stock exchange - all index
 ```{r}
-filter(covid, indicator_name == "Foreign exchange")
+head(filter(covid, indicator_name == "Foreign exchange"))
 ```
 ```{r}
-filter(covid, indicator_name == "Economic sentiment")
+head(filter(covid, indicator_name == "Economic sentiment"))
 ```
 
 
