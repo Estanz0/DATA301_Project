@@ -88,6 +88,17 @@ head(filter(covid, indicator_name == "Foreign exchange"))
 head(filter(covid, indicator_name == "Economic sentiment"))
 ```
 
+##### Looking at indicator time periods
+```{r}
+# get all unique indicators
+unique.indicators <- unique(covid$indicator_name)
+length(unique.indicators)
+```
+```{r}
+forex <- filter(covid, indicator_name == "Foreign exchange")
+forex$date <- as.Date(forex$parameter)
+```
+
 
 ### EDA 2
 
