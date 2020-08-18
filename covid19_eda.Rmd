@@ -5,7 +5,7 @@ author:
         - Iona Sammons
         - Lauren Halka
 date: "05/08/2020"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -25,11 +25,16 @@ The data set includes data on three main categories; Economic, Health and Social
   Another question we could look at is: How many people have not left New Zealand due to COVID-19? This would be answered by looking at daily border crossings (departures), where we would model a prediction, had COVID-19 not had any effect, versus what we actually saw.
 
 ### Data types and structure
-The dataset is structured in a tree like pattern, where there are four main classes, which each have a number of categories with a number of indicators. Some indicators also contain sub-categories which splits the data into categories such as City or Type of Passport. This is represented in the dataset with columns called `class`, `category`, `indicator_name` and `sub_series`.  
 
-  There are three columns which contain the actual time series information. These columns have the date, value and unit of measure. The values of different indicators have a number of units of measure including dollars, tonnes, percentage, percentage per annum, index and number.   
+##### Structure 
+The dataset is structured in a tree like pattern, where there are four main classes, which each have a number of categories with a number of indicators. Some indicators also contain sub-categories which splits the data into categories such as City or Type of Passport. This is represented in the dataset with columns called `class`, `category`, `indicator_name` and `sub_series`. 
+
+  There are three columns which contain the actual time series information. These columns have the date, value and unit of measure. The values of different indicators have a number of units of measure including dollars, tonnes, percentage, percentage per annum, index and number.  
   
   The last column is the date that the data for the indicator was last updated. This appears to apply to all the indicator values for all dates and not just the most recent value added to the indicator.
+  
+##### Types
+The dataset is a time series dataset with time series information for each sub-category. When we select and extract a categoruy from the dataset we will be left with a complete time series dataset for that category. From here we will only need to look at the date, value and maybe the sub-categories within. The majority of the values are numeric and continuous.
 
 ### Completeness and Correctness
 The dataset has 76 rows that have missing values in the `value` column. These missing values are mostly limited to three indicators and cover a certain time period for each indicator: Electricity Grid Demand (Oct 2003 - Mar 2005), New Jobs Posted Online (Oct 2003 - Dec 2004), Christchurch Heavy Vehicles (03 Dec 2018 - 05 Mar 2019). There is also one row with a missing value for the indicator, Fuel Supply.   
@@ -53,7 +58,7 @@ The dataset has 76 rows that have missing values in the `value` column. These mi
 
 ## Exploratory Data Analysis
 
-### Overall EDA (completeness / merging)
+### Overall EDA
 ```{r message = FALSE}
 # import packages
 library(dplyr)
@@ -66,8 +71,23 @@ covid <- read.csv("covid_19_data_portal.csv", header = TRUE, stringsAsFactors = 
 # check how many rows have missing values
 nrow(covid[rowSums(is.na(covid)) > 0,])
 ```
+```{r}
+# function to extract a subset of the data by class, category and indicator_name
+get.subset <- function(cl, cat, ind) {
+  return(filter(covid, class = cl, category = cat, indicator_name = ind))
+}
+```
 
 ### EDA 1
+- Weekly economic sentiment
+- New Zealand Stock exchange - all index
+```{r}
+filter(covid, indicator_name == "Foreign exchange")
+```
+```{r}
+filter(covid, indicator_name == "Economic sentiment")
+```
+
 
 ### EDA 2
 
