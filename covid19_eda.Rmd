@@ -2,7 +2,7 @@
 title: "COVID-19 EDA"
 author: 
         - Byron Smith (300504707)
-        - Iona Sammons
+        - Iona Sammons (300281718)
         - Lauren Halka
 date: "05/08/2020"
 output: html_document
