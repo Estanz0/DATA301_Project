@@ -101,6 +101,18 @@ forex$date <- as.Date(forex$parameter)
 
 
 ### EDA 2
+```{r}
+# Select data that relates to spending
+totalSpend <- filter(covid, indicator_name == "Card transaction total spend")
+
+# Convert the 'parameter' from a string to a date
+totalSpend$parameter <- as.Date(totalSpend$parameter, format="%Y-%m-%d")
+
+# See what we gots...
+plot(totalSpend$parameter, totalSpend$value)
+
+# Go get coffee to before finding what those zero values are.
+```
 
 ### EDA 3
 
