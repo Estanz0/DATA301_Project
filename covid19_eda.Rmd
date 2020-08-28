@@ -85,6 +85,10 @@ head(covid)
 ### EDA 1
 
 ##### Looking at indicator time frequencies
+I first want to look at the period of time between instances for each indicator. This will give some insight into what kind of time series data is contained within the whole dataset and provide a table with the time period for each indicator which can be used later on. When deciding on which question we want to answer with the dataset it may be preferable to use multiple indicators of the same frequency so that we don't lose any information when merging the indicator subsets.
+
+
+The function `get.frequency` finds the frequency of instances of a given dataset (subset of covid with a single indicator)
 ```{r}
 library(xts)
 # get the time frequency 
@@ -101,6 +105,7 @@ get.frequency <- function(df) {
 }
 ```
 
+The function `get.single.series` removes all but one series / sub series so that only one time period is left.
 ```{r}
 # get the single series for indicator
 get.single.series <- function(df) {
@@ -112,6 +117,7 @@ get.single.series <- function(df) {
 }
 ```
 
+Here we create a new data frame of all the indicators and their frequencies. We get a table with frequency counts and `ind.freqs.df`, which can be used to filter the large data set by frequency or lookup the frequency for an indicator.
 ```{r}
 # get instance frequency for all indicators
 # convert parameter to date
@@ -130,6 +136,7 @@ ind.freqs <- cbind(indicators, frequency)
 ind.freqs.df <- as.data.frame(ind.freqs)
 
 freq.totals <- ind.freqs.df %>% group_by(frequency) %>% summarise(total = n()) %>% arrange(total)
+ind.freqs.df %>% ungroup()
 ```
 ```{r}
 library(ggplot2)
@@ -139,6 +146,47 @@ ggplot(freq.totals, aes(x=reorder(frequency, total), y=total)) +
   labs(x = "Frequency", y = "Number of indicators", title = "Instance frequencies of indicators in COVID-19 dataset") +
   theme_classic()
 ```
+The COVID-19 dataset contains daily, weekly and monthly timeseries data. The majority of the indicators have monthly instances. 
+
+
+##### Time period covered
+When looking at what questions we may be able to answer with this data we also need to know how much information we have for each indicator in terms of time period covered. We will add this information to the dataframe holding the indicator frequencies to gain more insight about the indicators overall.
+
+```{r}
+# get start and end dates for each predictor
+start.date = c()
+end.date = c()
+for(i in 1:nrow(ind.freqs.df)){
+  tmp <- covid.1 %>% filter(indicator_name == ind.freqs.df$indicators[i])
+  start.date <- append(start.date, tmp$parameter[1])
+  end.date <- append(end.date, tmp$parameter[nrow(tmp)])
+}
+
+# create a data frame with indicator info (add to frequency data)
+indicator.info <- ind.freqs.df
+indicator.info$start.date <- start.date
+indicator.info$end.date <- end.date
+# make new column with approximate length (days and months)
+indicator.info <- indicator.info %>% 
+  mutate(time.range.day = end.date - start.date, 
+         time.range.month = round((end.date - start.date) / 30),
+         time.range.year = round((end.date - start.date) / 365))
+indicator.info$time.range.day <- as.numeric(indicator.info$time.range.day, units="days")
+indicator.info$time.range.month <- as.numeric(indicator.info$time.range.month, units="days")
+indicator.info$time.range.year <- as.numeric(indicator.info$time.range.year, units="days")
+```
+```{r}
+ggplot(indicator.info, aes(x = time.range.year, fill = frequency, color = frequency)) + 
+  geom_histogram(binwidth = 1, alpha = 0.7) +
+  labs(x = "Years of data", y = "Number of indicators", title = "Indicator time range")
+```
+We can see that most indicators have a relatively short time frame with the majority only going back 1 year. We can also see that the indicators which have less than a years worth of data have short frequencies, daily and weekly.
+
+```{r}
+
+```
+
+
 
 
 ### EDA 2
