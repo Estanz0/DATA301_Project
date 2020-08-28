@@ -84,8 +84,11 @@ head(covid)
 
 ### EDA 1
 
-##### Looking at indicator time frequencies
-I first want to look at the period of time between instances for each indicator. This will give some insight into what kind of time series data is contained within the whole dataset and provide a table with the time period for each indicator which can be used later on. When deciding on which question we want to answer with the dataset it may be preferable to use multiple indicators of the same frequency so that we don't lose any information when merging the indicator subsets.
+
+
+```{r}
+length(unique(covid$indicator_name))
+```
 
 
 The function `get.frequency` finds the frequency of instances of a given dataset (subset of covid with a single indicator)
@@ -177,9 +180,17 @@ indicator.info$time.range.month <- as.numeric(indicator.info$time.range.month, u
 indicator.info$time.range.year <- as.numeric(indicator.info$time.range.year, units="days")
 ```
 ```{r}
+ggplot(indicator.info, aes(x = time.range.year)) + 
+  geom_histogram(binwidth = 1, alpha = 0.8, fill = "steelblue") +
+  labs(x = "Years of data", y = "Number of indicators", title = "Indicator time range") +
+  theme(panel.background = element_rect(fill = "white", colour = "gray90", size = 1),
+          panel.grid.major = element_line(size = 0.7, linetype = 'solid', colour = "gray97"))
+```
+
+```{r}
 ggplot(indicator.info, aes(x = time.range.year, fill = frequency)) + 
   geom_histogram(binwidth = 1, alpha = 0.8) +
-  scale_fill_colorblind() +
+  scale_fill_ordinal() +
   labs(x = "Years of data", y = "Number of indicators", title = "Indicator time range") +
   theme(panel.background = element_rect(fill = "white", colour = "gray90", size = 1),
           panel.grid.major = element_line(size = 0.7, linetype = 'solid', colour = "gray97"))
@@ -192,6 +203,8 @@ From this plot we can see that there are a few indicators which have a daily fre
 filter(indicator.info, time.range.year == 5 & frequency == "daily")$indicators
 indicator.info
 ```
+
+
 We may want to answer a question regarding the impact COVID-19 has had on travel so we will look at the indicators `Daily border crossings - arrivals` and `Daily border crossings - departures`.
 ```{r}
 arrivals <- covid.1 %>% 
@@ -214,10 +227,6 @@ ggplot(flights, aes(x = parameter), size = 0.1) +
 ```
 
 
-
-```{r}
-head(covid)
-```
 
 
 ### EDA 2
