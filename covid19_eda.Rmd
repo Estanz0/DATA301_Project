@@ -29,6 +29,8 @@ The data set includes data on three main categories; Economic, Health and Social
 ##### Structure 
 The dataset is structured in a tree like pattern, where there are four main classes, which each have a number of categories with a number of indicators. Some indicators also contain sub-categories which splits the data into categories such as City or Type of Passport. This is represented in the dataset with columns called `class`, `category`, `indicator_name` and `sub_series`. 
 
+  Some indicators also have multiple series which cover the same time period. For example the indicator `Card transaction total spend` has the actual amount spent, the seasonally adjusted amount spent and the number of transactions.
+
   There are three columns which contain the actual time series information. These columns have the date, value and unit of measure. The values of different indicators have a number of units of measure including dollars, tonnes, percentage, percentage per annum, index and number.  
   
   The last column is the date that the data for the indicator was last updated. This appears to apply to all the indicator values for all dates and not just the most recent value added to the indicator.
@@ -72,31 +74,70 @@ covid <- read.csv("covid_19_data_portal.csv", header = TRUE, stringsAsFactors = 
 nrow(covid[rowSums(is.na(covid)) > 0,])
 ```
 ```{r}
-# function to extract a subset of the data by class, category and indicator_name
-get.subset <- function(cl, cat, ind) {
-  return(filter(covid, class = cl, category = cat, indicator_name = ind))
-}
+# remove rows with NA
+covid <- na.omit(covid)
+```
+
+```{r}
+head(covid)
 ```
 
 ### EDA 1
-- Weekly economic sentiment
-- New Zealand Stock exchange - all index
+
+##### Looking at indicator time frequencies
 ```{r}
-head(filter(covid, indicator_name == "Foreign exchange"))
-```
-```{r}
-head(filter(covid, indicator_name == "Economic sentiment"))
+library(xts)
+# get the time frequency 
+# df : subset of covid with one indicator_name value
+get.frequency <- function(df) {
+  # check if indicator has multiple series
+  ind.sub <- df
+  if(length(unique(ind.sub$series_name)) > 1 || length(unique(ind.sub$sub_series_name)) > 1){
+    ind.sub <- get.single.series(ind.sub)
+  }
+  # get time frequency of instances with periodicity function
+  avg.dif <- periodicity(ind.sub$parameter)
+  return(avg.dif$scale)
+}
 ```
 
-##### Looking at indicator time periods
 ```{r}
-# get all unique indicators
-unique.indicators <- unique(covid$indicator_name)
-length(unique.indicators)
+# get the single series for indicator
+get.single.series <- function(df) {
+  ans <- df %>% filter(series_name == unique(df$series_name)[1])
+  # check for multiple sub series
+  if(length(unique(ans$sub_series_name)) > 1)
+    ans <- ans %>% filter(sub_series_name == unique(df$sub_series_name)[1])
+  return(ans)
+}
+```
+
+```{r}
+# get instance frequency for all indicators
+# convert parameter to date
+covid.1 <- covid
+covid.1$parameter <- as.Date(covid.1$parameter)
+# remove NA dates
+covid.1 <- na.omit(covid.1)
+
+indicators <- unique(covid.1$indicator_name)
+frequency <- c()
+for(i in 1:length(indicators)) {
+  ind.sub <- covid.1 %>% filter(indicator_name == indicators[i])
+  frequency <- append(frequency, get.frequency(ind.sub))
+}
+ind.freqs <- cbind(indicators, frequency)
+ind.freqs.df <- as.data.frame(ind.freqs)
+
+freq.totals <- ind.freqs.df %>% group_by(frequency) %>% summarise(total = n()) %>% arrange(total)
 ```
 ```{r}
-forex <- filter(covid, indicator_name == "Foreign exchange")
-forex$date <- as.Date(forex$parameter)
+library(ggplot2)
+ggplot(freq.totals, aes(x=reorder(frequency, total), y=total)) +
+  geom_bar(stat="identity", fill = "steelblue") + 
+  geom_text(aes(label=total), vjust=1.6, color="white", size=3.5) +
+  labs(x = "Frequency", y = "Number of indicators", title = "Instance frequencies of indicators in COVID-19 dataset") +
+  theme_classic()
 ```
 
 
