@@ -36,7 +36,7 @@ The dataset is structured in a tree like pattern, where there are four main clas
   The last column is the date that the data for the indicator was last updated. This appears to apply to all the indicator values for all dates and not just the most recent value added to the indicator.
   
 ##### Types
-The dataset is a time series dataset with time series information for each sub-category. When we select and extract a categoruy from the dataset we will be left with a complete time series dataset for that category. From here we will only need to look at the date, value and maybe the sub-categories within. The majority of the values are numeric and continuous.
+All the columns in the dataset are character types. The columns `parameter` and `value` will need to be changed to other types before these columns can be used. However, as some values are integers while others are floats it would be wise to only change the type once we have extracted the subset we are going to work on. Similarly with the dates, the formats are generally the same but differ for certain indicators.
 
 ### Completeness and Correctness
 The dataset has 76 rows that have missing values in the `value` column. These missing values are mostly limited to three indicators and cover a certain time period for each indicator: Electricity Grid Demand (Oct 2003 - Mar 2005), New Jobs Posted Online (Oct 2003 - Dec 2004), Christchurch Heavy Vehicles (03 Dec 2018 - 05 Mar 2019). There is also one row with a missing value for the indicator, Fuel Supply.   
@@ -89,7 +89,7 @@ I first want to look at the period of time between instances for each indicator.
 
 
 The function `get.frequency` finds the frequency of instances of a given dataset (subset of covid with a single indicator)
-```{r}
+```{r message = F}
 library(xts)
 # get the time frequency 
 # df : subset of covid with one indicator_name value
@@ -118,7 +118,7 @@ get.single.series <- function(df) {
 ```
 
 Here we create a new data frame of all the indicators and their frequencies. We get a table with frequency counts and `ind.freqs.df`, which can be used to filter the large data set by frequency or lookup the frequency for an indicator.
-```{r}
+```{r message = F}
 # get instance frequency for all indicators
 # convert parameter to date
 covid.1 <- covid
@@ -136,7 +136,6 @@ ind.freqs <- cbind(indicators, frequency)
 ind.freqs.df <- as.data.frame(ind.freqs)
 
 freq.totals <- ind.freqs.df %>% group_by(frequency) %>% summarise(total = n()) %>% arrange(total)
-ind.freqs.df %>% ungroup()
 ```
 ```{r}
 library(ggplot2)
@@ -144,8 +143,10 @@ ggplot(freq.totals, aes(x=reorder(frequency, total), y=total)) +
   geom_bar(stat="identity", fill = "steelblue") + 
   geom_text(aes(label=total), vjust=1.6, color="white", size=3.5) +
   labs(x = "Frequency", y = "Number of indicators", title = "Instance frequencies of indicators in COVID-19 dataset") +
-  theme_classic()
+  theme(panel.background = element_rect(fill = "white", colour = "gray90", size = 1),
+          panel.grid.major = element_line(size = 0.7, linetype = 'solid', colour = "gray97"))
 ```
+  
 The COVID-19 dataset contains daily, weekly and monthly timeseries data. The majority of the indicators have monthly instances. 
 
 
@@ -176,17 +177,47 @@ indicator.info$time.range.month <- as.numeric(indicator.info$time.range.month, u
 indicator.info$time.range.year <- as.numeric(indicator.info$time.range.year, units="days")
 ```
 ```{r}
-ggplot(indicator.info, aes(x = time.range.year, fill = frequency, color = frequency)) + 
-  geom_histogram(binwidth = 1, alpha = 0.7) +
-  labs(x = "Years of data", y = "Number of indicators", title = "Indicator time range")
+ggplot(indicator.info, aes(x = time.range.year, fill = frequency)) + 
+  geom_histogram(binwidth = 1, alpha = 0.8) +
+  scale_fill_colorblind() +
+  labs(x = "Years of data", y = "Number of indicators", title = "Indicator time range") +
+  theme(panel.background = element_rect(fill = "white", colour = "gray90", size = 1),
+          panel.grid.major = element_line(size = 0.7, linetype = 'solid', colour = "gray97"))
 ```
-We can see that most indicators have a relatively short time frame with the majority only going back 1 year. We can also see that the indicators which have less than a years worth of data have short frequencies, daily and weekly.
+
+We can see that most indicators have a relatively short time frame with the majority only going back 1 year. We can also see that the indicators which have less than a years worth of data have short frequencies, daily and weekly. 
+
+From this plot we can see that there are a few indicators which have a daily frequency and go back about 5 years.
+```{r}
+filter(indicator.info, time.range.year == 5 & frequency == "daily")$indicators
+indicator.info
+```
+We may want to answer a question regarding the impact COVID-19 has had on travel so we will look at the indicators `Daily border crossings - arrivals` and `Daily border crossings - departures`.
+```{r}
+arrivals <- covid.1 %>% 
+  filter(indicator_name == "Daily border crossings - arrivals" & series_name == "Total") %>% 
+  select(parameter, value) %>% 
+  rename(arrivals = value)
+
+departures <- covid.1 %>% 
+  filter(indicator_name == "Daily border crossings - departures" & series_name == "Total") %>% 
+  select(parameter, value) %>% 
+  rename(departures = value)
+
+flights <- left_join(arrivals, departures, by = "parameter")
+flights$arrivals <- as.numeric(flights$arrivals)
+flights$departures <- as.numeric(flights$departures)
+
+ggplot(flights, aes(x = parameter), size = 0.1) +
+  geom_line(aes(y = arrivals, color = "#56B4E9"), alpha = 0.8) +
+  geom_line(aes(y = departures, color = "#D55E00"), alpha = 0.8)
+```
+
+
 
 ```{r}
-
+head(covid)
 ```
-
-
 
 
 ### EDA 2
