@@ -170,7 +170,7 @@ for(i in 1:nrow(ind.freqs.df)){
 indicator.info <- ind.freqs.df
 indicator.info$start.date <- start.date
 indicator.info$end.date <- end.date
-# make new column with approximate length (days and months)
+# make new column with approximate length (days and months and years)
 indicator.info <- indicator.info %>% 
   mutate(time.range.day = end.date - start.date, 
          time.range.month = round((end.date - start.date) / 30),
@@ -201,29 +201,7 @@ We can see that most indicators have a relatively short time frame with the majo
 From this plot we can see that there are a few indicators which have a daily frequency and go back about 5 years.
 ```{r}
 filter(indicator.info, time.range.year == 5 & frequency == "daily")$indicators
-indicator.info
-```
-
-
-We may want to answer a question regarding the impact COVID-19 has had on travel so we will look at the indicators `Daily border crossings - arrivals` and `Daily border crossings - departures`.
-```{r}
-arrivals <- covid.1 %>% 
-  filter(indicator_name == "Daily border crossings - arrivals" & series_name == "Total") %>% 
-  select(parameter, value) %>% 
-  rename(arrivals = value)
-
-departures <- covid.1 %>% 
-  filter(indicator_name == "Daily border crossings - departures" & series_name == "Total") %>% 
-  select(parameter, value) %>% 
-  rename(departures = value)
-
-flights <- left_join(arrivals, departures, by = "parameter")
-flights$arrivals <- as.numeric(flights$arrivals)
-flights$departures <- as.numeric(flights$departures)
-
-ggplot(flights, aes(x = parameter), size = 0.1) +
-  geom_line(aes(y = arrivals, color = "#56B4E9"), alpha = 0.8) +
-  geom_line(aes(y = departures, color = "#D55E00"), alpha = 0.8)
+head(indicator.info)
 ```
 
 
