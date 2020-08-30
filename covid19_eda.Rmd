@@ -231,15 +231,39 @@ ggplot(flights, aes(x = parameter), size = 0.1) +
 
 ### EDA 2
 ```{r}
-# Select data that relates to spending
-totalSpend <- filter(covid, series_name == "Spend (actual)")
+# Select data that relates to departures
+allDepartures <- filter(covid, indicator_name == "Daily border crossings - departures")
 
 # Convert values from char to correct format
-totalSpend$parameter <- as.Date(totalSpend$parameter, format="%Y-%m-%d")
-totalSpend$value <- as.numeric(totalSpend$value)
+allDepartures$parameter <- as.Date(allDepartures$parameter, format="%Y-%m-%d")
+allDepartures$value <- as.numeric(allDepartures$value)
+
+# Select NZ passport departures
+nzDepartures <- filter(allDepartures, series_name == "New Zealand passport")
 
 # See what we gots...
-plot(totalSpend$parameter, totalSpend$value)
+plot(allDepartures$parameter, allDepartures$value)
+plot(nzDepartures$parameter, nzDepartures$value)
+
+# Narrow it down
+firstReportedCase <- as.Date("2020-02-28")
+bordersClosed <- as.Date("2020-03-19")
+levelFour <- as.Date("2020-03-25")
+MIQStarted <- as.Date("2020-04-10")
+levelThree <- as.Date("2020-04-27")
+levelTwo <- as.Date("2020-05-13")
+levelOne <- as.Date("2020-06-08")
+MIQFeeCameIntoEffect <- as.Date("2020-08-11")
+
+recentNzDepartures <- filter(nzDepartures, parameter > firstReportedCase)
+ggplot(recentNzDepartures, aes(x=parameter, y=value)) + 
+  geom_line() +
+  geom_vline(xintercept = bordersClosed, color = "blue") +
+  geom_vline(xintercept = levelFour, color = "red") +
+  geom_vline(xintercept = levelThree, color = "orange") +
+  geom_vline(xintercept = levelTwo, color = "yellow") +
+  geom_vline(xintercept = levelOne, color = "green") +
+  geom_vline(xintercept = MIQFeeCameIntoEffect, color = "blue")
 ```
 
 ### EDA 3
