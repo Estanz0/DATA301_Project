@@ -3,7 +3,7 @@ title: "COVID-19 EDA"
 author: 
         - Byron Smith (300504707)
         - Iona Sammons (300281718)
-        - Lauren Halka
+        - Lauren Halka (300346046)
 date: "05/08/2020"
 output: html_document
 ---
@@ -52,9 +52,40 @@ The dataset has 76 rows that have missing values in the `value` column. These mi
 
 ### Ethical Considerations
 
+Ethics in the data science process, at its core, revolves around the idea of ensuring that any data associated with a given project is ethically sourced.  In the context of the COVID-19 Data Portal, this in turn, firstly, involves considering whether informed consent was collected prior to the gathering/integrating of new and existing data, to ensure that all of those individuals represented in the figures and statistics of the portal, are aware that data linking back to them is being used and for what reason.
+
+As the portal brings together data from multiple external sources (as well as utilising its own), ensuring informed consent was received in this particular setting is clearly questionable.  The process of tracking down and informing each individual (who contributed their data to the portal) of the prospective use and distribution of their data would be an extremely complex and timely exercise.  Because the data in the portal itself takes an aggregate format, and thus does not present data of individuals, it could also be questioned whether the above detail in terms of informed consent is required.  As the portal utilises data from other government organisations, it could be assumed that appropriate agreements have been made between each source and those individuals whose data were collected, to distribute it for research purposes.
+
+Another angle from which ethics should be considered in this case, relates to the application of Māori Data Sovereignty principles (https://cdn.auckland.ac.nz/assets/psych/about/our-research/documents/TMR%2BM%C4%81ori%2BData%2BSovereignty%2BPrinciples%2BOct%2B2018.pdf).  The COVID-19 Portal mainly concerns data relating to the state of economic, health and social factors in New Zealand (with the addition of some international data for the sake of comparison only), for which reason this consideration is so crucial.  Although the portal aggregates data, it fails to create additional attributes that showcase data relating to and representing Māori.  Because of this, Māori are unable to identify with the portal, and have clear control over their data through subjecting it to  Māori governance.
+
 ### Privacy Concerns
 
+Stats NZ ensures that data published does not identify individuals, households or businesses as stated on their Privacy, Security and Confidentiality page. (http://archive.stats.govt.nz/about_us/legisln-policies-protocols/confidentiality-of-info-supplied-to-snz.aspx#gsc.tab=0).
+
+However we must ensure that when using the data we do not make any effort to identify any individual party that contributed information to Stats NZ to create the data set. We may in the future obtain data which when paired with the COVID-19 Data Portal dataset may allow us to identify individual parties. We should again ensure we make no effort to identify these parties and when publishing our results, ensure that the parties are anonymized and the results cannot be used to identify individual parties. 
+
 ### Security of data
+
+To address the issue of security and potential problem areas with the data required for this project, we will assess it according to the principles contained within the CIA Triad - Confidentiality, Integrity and Availability. 
+
+#### Confidentiality
+
+As we are using publicly available data, we are trusting that Stats NZ will ensure the security of the data up to the point that we download it.  For them to do this successfully, they will securely work with data they are aggregating, so that no individual can gain unauthorised access to it, thus protecting the data from being tampered with or unlawfully distributed.  Furthermore, to protect the privacy of the individuals behind the data, Stats NZ will need to ensure that no data is personally identifiable, which when taking into consideration this data works with totals and aggregates, this should not be an issue, however, it does pay to mention it.
+
+#### Integrity
+
+When considering the process in which Stats NZ undertakes to collate the COVID-19 Data Portal, the fact that it is updated daily to provide new data demonstrates commitment to ensuring the data is as relevant as it can possibly be.  However, because they are collating data from other Government organisations, although they can ensure the quality and integrity of the data in which they collect themselves, they cannot promise the same of those collected externally.  With this in mind, Stats NZ has, however, made a disclaimer surrounding this issue.
+
+Once downloaded, the main risk to the data will be integrity, where it is modified without our knowledge. One way that we can ensure that the integrity of the data is by using version tracking through git which will show any modifications made to the data after download. This will ensure, if we see no changes, that the data downloaded is the same as that on Stats NZ website, which we can assume to be correct. 
+
+#### Availability
+
+Assessing availability involves looking at the ability of mechanisms to perform appropriately and grant access to the data when required.  As a publicly available dataset that is updated daily and can be downloaded from the COVID-19 Data Portal with the simple click of a button, there are no apparent issues here.
+
+#### How will we keep project data and results secure?
+
+Keeping the above in mind when answering this part of the question, keeping project data and results secure in this context is more about carrying out measures to prevent work from being lost, as opposed to doing so alongside protecting sensitive data from being leaked - because we are utilising a public data source.  Consequently, to do this, we will ensure we back up all progress when working with R code through committing it to our Github repository.  However, if we were working with sensitive data, to keep these results secure, we would take a further step and set our repository to private, ensuring that it can only be accessed by members of our team.  
+
 
 ---
 
@@ -246,7 +277,38 @@ ggplot(recentNzDepartures, aes(x=parameter, y=value)) +
 
 ### EDA 3
 
+Exploratory Data Analysis is all about the process of better understanding the data one is working with.  As mentioned at the beginning of this analysis, this COVID-19 portal has its data structured like a decision tree, containing categorical variables to help group the key attribute, ‘parameter’.  The first defining attribute is that of 'class', determining whether data relates to Economic, Health, Social or Wellbeing factors.  Of the 112,382 observations in the cleaned version of the COVID-19 Data Portal (whereby rows containing NA values were omitted), the following visualisation shows how the classifications are distributed amongst all current observations.
+
+```{r}
+
+covid_class_summary <- covid %>% group_by(class) %>% summarize(count=n())
+covid_class_summary <- as.data.frame(covid_class_summary)
+
+ggplot(covid_class_summary, aes(x=class, y=count, fill=class)) + 
+  geom_bar(stat = "identity") +
+  xlab("Class") + ylab("No. of Observations") 
+  
+```
+
+The above goes to show that the clear majority of observations kept within this portal are associated with ‘Economic’ factors.  ‘Health’ too contains a significant number of observations, which would be assumed as being associated with COVID-19 related statistics as that is what the portal was created for.  Something interesting to note is the 24 ‘Wellbeing’ related observations, which are so insignificant and hence do not appear on the graph.  In Stats NZ’s description, this classification is not one of the three mentioned, for which reason it should be further investigated, and potentially moved under the ‘Health’ category, if appropriate, to ensure it is accounted for in analysis.
+
+```{r}
+  
+# creating a subset of the covid data that contains only those classified as 'Wellbeing'
+investigation <- filter(covid, class=="Wellbeing")
+
+# only including the first three columns as they best summarise the categories of each observation
+investigation <- investigation[,1:3]
+
+# defining the unique observation types that come under the wellbeing category
+distinct(investigation)
+  
+```
+Upon further investigation - results as shown in the above table - the 24 observations that were classified as ‘Wellbeing’, came under 3 distinct combinations of the attributes ‘class’, ‘category’, and ‘indicator_name’.  When considering they fall under categories associated with crime and social connection, it would make sense to instead move all of these observations under the ‘Social’ class.
+
+
 ---
+
 
 ## Individual Contributions
 
